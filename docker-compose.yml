@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  # ==============================================
+  # nginxの設定
+  # ==============================================
+  nginx:
+    build: ./docker/nginx
+    ports: 
+      - 8080:80
+    working_dir: /work
+    volumes:
+      - ./htdocs/:/work
+      # - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - phpfpm
+
+  # ==============================================
+  # phpfpmの設定
+  # ==============================================
+  phpfpm:
+    build: ./docker/phpfpm
+    volumes:
+      - ./docker/phpfpm/php-fpm.d/:/etc/php-fpm.d
+      - ./htdocs/:/work
+    ports:
+      - 9000:9000
+    depends_on: 
+      - mysql
+
+  # ==============================================
+  # MySQLの設定
+  # ==============================================
+  mysql:
+    build: ./docker/mysql
+    ports:
+      - "3306:3306"
+    user: "1000:50"
+    command: --innodb-use-native-aio=0
+    volumes:
+      - ./storage/mysql/data/:/var/lib/mysql
+      - ./docker/mysql/conf/:/etc/mysql/conf.d/
+    environment:
+      MYSQL_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+      # このDBはmysql内でデフォルトで作成され
+      # rootと一般ユーザ( `MYSQL_USER` )がグローバル権限を持ってる
+      MYSQL_DATABASE: docker

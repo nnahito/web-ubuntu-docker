@@ -1,0 +1,1 @@
+/etc/init.d/php8.0-fpm start
